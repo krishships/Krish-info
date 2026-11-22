@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Got_this — Godot games &amp; AI tools</title>
+<meta name="description" content="Got_this builds Godot games and AI-powered websites. Play the games, try the AI tools, get in touch.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* dark-first: deep teal-slate ground, cyan primary, lime secondary */
+    --bg:#050b11; --bg-2:#071320;
+    --surface:#0a1620; --surface-2:#0d1e2b;
+    --border:rgba(140,220,240,.12); --border-strong:rgba(140,220,240,.22);
+    --text:#dceef5; --text-dim:#7f9aa8;
+    --accent:#1fb6cf; --accent-dim:rgba(31,182,207,.13);
+    --sage:#8fc93a; --sage-dim:rgba(143,201,58,.13);
+    --glow-1:rgba(31,182,207,.10); --glow-2:rgba(143,201,58,.07);
+    --bar:#040a10; --bar-text:#cfe8f2;
+    --font-display:"Instrument Serif",Georgia,serif;
+    --font-body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    --font-mono:"IBM Plex Mono",ui-monospace,monospace;
+    --radius:14px; --max:1200px;
+  }
+  @media (prefers-color-scheme: light){
+    :root{--bg:#f6fdfe;--bg-2:#eef9fb;--surface:#fff;--surface-2:#e8f6f9;
+    --border:rgba(8,60,75,.12);--border-strong:rgba(8,60,75,.22);
+    --text:#06222c;--text-dim:#4a6d78;
+    --accent:#0891b2;--accent-dim:rgba(8,145,178,.10);
+    --sage:#4d7c0f;--sage-dim:rgba(77,124,15,.12);
+    --glow-1:rgba(34,211,238,.22);--glow-2:rgba(163,230,53,.18);
+    --bar:#06222c;--bar-text:#dff7ff}
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;background:#050b11}
+  body{margin:0;color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
+    background:
+      radial-gradient(1000px 520px at 8% -12%, var(--glow-1), transparent 68%),
+      radial-gradient(820px 460px at 96% 4%, var(--glow-2), transparent 70%),
+      radial-gradient(600px 600px at 50% 120%, var(--glow-1), transparent 72%),
+      linear-gradient(180deg, var(--bg), var(--bg-2) 60%, var(--bg));
+    background-repeat:no-repeat;
+    min-height:100dvh;
+    overscroll-behavior-y:none}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 22px}
+  a{color:inherit}
+
+  /* ---------- top bar (one bar) ---------- */
+  .top{position:sticky;top:0;z-index:60}
+  .bar{background:var(--bar);color:var(--bar-text);display:flex;align-items:center;gap:4px;padding:0 12px;height:58px;
+    border-bottom:1px solid var(--border);box-shadow:0 1px 0 rgba(34,211,238,.10)}
+  .bar .wordmark{font-family:var(--font-body);font-weight:600;font-size:19px;letter-spacing:-.02em;color:#fff;
+    text-decoration:none;padding:0 8px 0 4px;white-space:nowrap}
+  .bar .spacer{flex:1}
+  .bar .ic{display:grid;place-items:center;width:38px;height:38px;border-radius:8px;background:none;border:0;
+    color:#e8e8e8;cursor:pointer;text-decoration:none;transition:background .15s}
+  .bar .ic:hover{background:rgba(255,255,255,.12)}
+  .bar .avatar{width:30px;height:30px;border-radius:50%;background:#22b8d6;color:#08252c;display:grid;place-items:center;
+    font-weight:600;font-size:14px;text-decoration:none;margin-left:4px}
+  .bar .avatar:hover{filter:brightness(1.1)}
+  .bar .tabs{display:flex;gap:2px;margin-left:10px;overflow-x:auto;scrollbar-width:none;min-width:0}
+  .bar .tabs::-webkit-scrollbar{display:none}
+  .tab{font:14px var(--font-body);background:none;border:0;color:rgba(255,255,255,.72);cursor:pointer;
+    padding:8px 11px;border-radius:8px;white-space:nowrap;transition:color .15s,background .15s}
+  .tab:hover{color:#fff;background:rgba(255,255,255,.10)}
+  .tab[aria-selected="true"]{color:var(--accent);background:var(--accent-dim);font-weight:500}
+  @media (max-width:640px){
+    .bar{height:52px;padding:0 6px;gap:0}
+    .bar .wordmark,.bar #gridBtn,.bar .ic[href^="#contact"]{display:none}
+    .bar .spacer{display:none}
+    .bar .avatar{margin-left:auto}
+    .bar .ic{width:34px;height:34px}
+    .bar .tabs{margin-left:2px;flex:1;gap:0}
+    .tab{padding:7px 7px;font-size:12.5px}
+    .bar .avatar{margin-left:2px}
+  }
+
+  .menu{position:absolute;left:12px;top:64px;width:min(340px,calc(100vw - 24px));max-height:70vh;overflow:auto;
+    background:var(--surface);border:1px solid var(--border-strong);border-radius:14px;padding:6px;z-index:70;
+    box-shadow:0 24px 60px rgba(0,0,0,.45),0 0 0 1px rgba(34,211,238,.06),0 0 40px rgba(34,211,238,.10)}
+  .menu[hidden]{display:none}
+  .menu a{display:block;padding:10px 12px;border-radius:8px;text-decoration:none;font-size:14.5px;color:var(--text)}
+  .menu a span{display:block;font-size:12.5px;color:var(--text-dim)}
+  .menu a:hover{background:var(--surface-2);color:var(--accent)}
+
+  .barsearch{display:flex;align-items:center;gap:8px;flex:1;max-width:460px;margin:0 8px;
+    background:rgba(255,255,255,.08);border:1px solid var(--border-strong);border-radius:999px;padding:5px 12px;color:var(--bar-text)}
+  .barsearch[hidden]{display:none}
+  .barsearch svg{flex:0 0 auto;opacity:.75}
+  .barsearch input{flex:1;min-width:0;background:none;border:0;outline:none;color:var(--bar-text);
+    font:14.5px var(--font-body);padding:2px 0}
+  .barsearch input::placeholder{color:rgba(223,247,255,.55)}
+  .barsearch button{background:none;border:0;color:var(--bar-text);font-size:20px;line-height:1;cursor:pointer;opacity:.7;padding:0 2px}
+  .barsearch button:hover{opacity:1}
+  .tabs.hide{display:none}
+  body.searching .kbd,body.searching #searchBtn,body.searching .bar .avatar{display:none}
+  .search.noinput input{display:none}
+  .search.noinput #searchResults{margin-top:0}
+
+  .search{position:absolute;left:50%;transform:translateX(-50%);top:66px;width:min(560px,calc(100vw - 24px));
+    background:var(--surface);border:1px solid var(--border-strong);border-radius:14px;padding:10px;z-index:75;
+    box-shadow:0 24px 60px rgba(0,0,0,.5),0 0 40px rgba(34,211,238,.12)}
+  .search[hidden]{display:none}
+  .search input{width:100%;font:15px var(--font-body);color:var(--text);background:var(--surface-2);
+    border:1px solid var(--border-strong);border-radius:9px;padding:10px 12px;outline:none}
+  .search input:focus{border-color:var(--accent)}
+  #searchResults{display:grid;gap:2px;margin-top:8px;max-height:min(52vh,360px);overflow:auto;padding-bottom:4px}
+  #searchResults a{display:flex;align-items:baseline;gap:10px;padding:9px 10px;border-radius:8px;text-decoration:none;font-size:14px;color:var(--text)}
+  #searchResults a small{margin-left:auto;color:var(--text-dim);font-size:12px;white-space:nowrap}
+  #searchResults a:hover,#searchResults a.sel{background:var(--surface-2);color:var(--accent)}
+  #searchResults .none{font-size:13.5px;color:var(--text-dim);padding:10px}
+  .searchhint{font-size:11.5px;color:var(--text-dim);margin:8px 2px 0;font-family:var(--font-mono)}
+  #searchResults .grp{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);padding:10px 10px 4px}
+  #searchResults a small{color:var(--text-dim)}
+  #searchResults a .t{font-weight:500}
+  .kbd{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;border:1px solid var(--border-strong);
+    border-radius:5px;padding:2px 6px;color:var(--text-dim);margin-left:2px}
+  @media (max-width:820px){.kbd{display:none}}
+
+  /* ---------- panels ---------- */
+  .panel{display:none}
+  .panel.on{display:block}
+
+  header.hero{padding:56px 0 40px}
+  .hero-grid{display:grid;gap:28px;grid-template-columns:1fr}
+  @media (min-width:940px){.hero-grid{grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);align-items:start}}
+  .live-card{background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius);padding:18px;
+    box-shadow:0 18px 50px rgba(0,0,0,.18)}
+  @media (prefers-color-scheme: light){.live-card{box-shadow:0 18px 50px rgba(6,34,44,.08)}}
+  .live-card h4{margin:0 0 10px;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--accent)}
+  .live-card a{display:flex;align-items:center;gap:10px;text-decoration:none;padding:9px 0;border-top:1px solid var(--border);font-size:14px}
+  .live-card a:first-of-type{border-top:0}
+  .live-card a:hover{color:var(--accent)}
+  .live-card a .dot{width:7px;height:7px;border-radius:50%;background:var(--sage);flex:0 0 auto;box-shadow:0 0 8px var(--sage)}
+  .live-card a small{margin-left:auto;color:var(--text-dim);font-size:12px}
+  .eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);
+    display:flex;align-items:center;gap:9px;margin-bottom:16px;flex-wrap:wrap}
+  .eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent);flex:0 0 auto}
+  h1{font-family:var(--font-display);font-weight:400;font-size:clamp(38px,7.4vw,66px);line-height:1.02;letter-spacing:-.02em;margin:0 0 18px;max-width:17ch}
+  h1 em{font-style:italic;color:var(--accent)}
+  .lede{font-size:clamp(16px,2.1vw,19.5px);color:var(--text-dim);max-width:58ch;margin:0 0 26px}
+  .links{display:flex;flex-wrap:wrap;gap:10px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:999px;border:1px solid var(--border-strong);
+    background:var(--surface);text-decoration:none;font-size:14.5px;font-weight:500;transition:transform .15s,border-color .15s}
+  .btn:hover{transform:translateY(-1px);border-color:var(--accent)}
+  .btn--primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn--primary:hover{opacity:.93}
+
+  section{padding:34px 0;border-top:1px solid var(--border)}
+  .section-head{display:flex;align-items:baseline;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+  .num{font-family:var(--font-mono);font-size:12px;color:var(--text-dim);border:1px solid var(--border-strong);border-radius:6px;padding:1px 7px}
+  h2{font-family:var(--font-display);font-weight:400;font-size:clamp(25px,3.6vw,34px);margin:0;letter-spacing:-.01em}
+  .section-note{font-size:14px;color:var(--text-dim);margin-left:auto}
+
+  /* ---------- showcase cards with image tops ---------- */
+  .cover{position:relative;aspect-ratio:16/9;display:grid;place-items:center;overflow:hidden}
+  .cover .init{font-family:var(--font-display);font-size:46px;color:#fff;z-index:2;letter-spacing:-.01em;
+    text-shadow:0 2px 12px rgba(0,0,0,.28);text-align:center;padding:0 14px;line-height:1.05}
+  .cover::after{content:"";position:absolute;inset:0;background:
+    radial-gradient(120% 90% at 20% 0%,rgba(255,255,255,.18),transparent 60%),
+    repeating-linear-gradient(45deg,rgba(255,255,255,.05) 0 2px,transparent 2px 14px)}
+  .cv1{background:linear-gradient(135deg,#0b5a6e,#041f2a)}
+  .cv2{background:linear-gradient(135deg,#3d6512,#111f06)}
+  .cv3{background:linear-gradient(135deg,#0e4a5c,#06141c)}
+  .cv4{background:linear-gradient(135deg,#334f10,#0d1a08)}
+  .cover .badge{position:absolute;left:10px;top:10px;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;
+    text-transform:uppercase;background:rgba(0,0,0,.55);color:#fff;border-radius:5px;padding:3px 7px;z-index:3}
+
+  .grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;
+    display:flex;flex-direction:column;text-decoration:none;transition:transform .18s,border-color .18s,box-shadow .18s}
+  .tile:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 10px 30px rgba(0,0,0,.06)}
+  .shot{position:relative;aspect-ratio:16/9;background:var(--surface-2);overflow:hidden}
+  .shot img{width:100%;height:100%;object-fit:cover;display:block}
+  .shot .ph{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-display);font-size:44px;color:var(--accent);opacity:.55}
+  .shot .ph::after{content:"";position:absolute;inset:0;background:
+    repeating-linear-gradient(135deg,transparent 0 10px,rgba(194,65,12,.06) 10px 20px)}
+  .shot .badge{position:absolute;left:10px;top:10px;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;
+    text-transform:uppercase;background:var(--accent);color:#fff;border-radius:5px;padding:3px 7px;z-index:2}
+  .tile .body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .tile h3{font-family:var(--font-display);font-weight:400;font-size:22px;margin:0;line-height:1.15}
+  .tile p{margin:0;font-size:14px;color:var(--text-dim)}
+  .tile .go{margin-top:auto;padding-top:10px;font-size:13.5px;color:var(--accent);font-weight:500}
+
+  /* ---------- feature / service cards ---------- */
+  .svc{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:22px;min-width:0}
+  .svc h3{font-size:16px;font-weight:600;margin:0 0 8px}
+  .svc p{margin:0;font-size:14.5px;color:var(--text-dim)}
+  .svc .kicker{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:10px}
+
+  /* ---------- project blocks ---------- */
+  .proj{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
+  .proj .shot{aspect-ratio:16/9}
+  .proj .inner{padding:20px 22px 22px}
+  .proj .sub{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+  .proj h3{font-family:var(--font-display);font-weight:400;font-size:24px;margin:0 0 6px}
+  .proj p{margin:0 0 10px;font-size:14.5px;color:var(--text-dim)}
+  .feat{list-style:none;padding:0;margin:0 0 16px;display:grid;gap:6px}
+  .feat li{font-size:13.5px;color:var(--text-dim);padding-left:16px;position:relative}
+  .feat li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+
+  /* ---------- contact ---------- */
+  .contact-grid{display:grid;gap:18px;grid-template-columns:1fr;max-width:640px}
+
+  footer{border-top:1px solid var(--border);padding:24px 0 40px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:13px;color:var(--text-dim)}
+  footer a{text-decoration:none;border-bottom:1px solid transparent}
+  footer a:hover{color:var(--accent);border-color:var(--accent)}
+  footer .sp{margin-left:auto}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+  @media (max-width:560px){header.hero{padding:34px 0 26px}.section-note{margin-left:0;width:100%}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="bar">
+    <button class="ic" id="menuBtn" aria-label="Menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+    </button>
+    <a class="wordmark" href="#home" data-tab="home">Got_this</a>
+    <div class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" data-tab="home" aria-selected="true">Home</button>
+      <button class="tab" role="tab" data-tab="games" aria-selected="false">Games</button>
+      <button class="tab" role="tab" data-tab="ai" aria-selected="false">AI tools</button>
+      <button class="tab" role="tab" data-tab="contact" aria-selected="false">Contact</button>
+    </div>
+    <div class="spacer"></div>
+    <div class="barsearch" id="barSearch" hidden>
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <input id="barSearchInput" type="text" placeholder="Search this site" aria-label="Search this site" autocomplete="off">
+      <button id="barSearchClose" aria-label="Close search">&times;</button>
+    </div>
+    <span class="kbd" aria-hidden="true">&#8984;K</span>
+    <button class="ic" id="searchBtn" aria-label="Search">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <a class="ic" href="#contact" data-tab="contact" aria-label="Help and contact">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.7.3-1 .9-1 1.6v.3" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/><circle cx="12" cy="16.6" r="1" fill="currentColor"/></svg>
+    </a>
+    <button class="ic" id="gridBtn" aria-label="All sections" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><g fill="currentColor"><rect x="3" y="3" width="4.5" height="4.5" rx="1"/><rect x="10" y="3" width="4.5" height="4.5" rx="1"/><rect x="17" y="3" width="4.5" height="4.5" rx="1"/><rect x="3" y="10" width="4.5" height="4.5" rx="1"/><rect x="10" y="10" width="4.5" height="4.5" rx="1"/><rect x="17" y="10" width="4.5" height="4.5" rx="1"/><rect x="3" y="17" width="4.5" height="4.5" rx="1"/><rect x="10" y="17" width="4.5" height="4.5" rx="1"/><rect x="17" y="17" width="4.5" height="4.5" rx="1"/></g></svg>
+    </button>
+    <a class="avatar" href="#contact" data-tab="contact" aria-label="Contact">G</a>
+  </div>
+
+
+  <div class="menu" id="menu" hidden>
+    <a href="#home" data-tab="home">Home <span>who I am, what I build</span></a>
+    <a href="#games" data-tab="games">Games <span>four published Godot builds</span></a>
+    <a href="#ai" data-tab="ai">AI tools <span>agent + Wikipedia answers</span></a>
+    <a href="#contact" data-tab="contact">Contact <span>Discord or email</span></a>
+    <a href="https://got-this.itch.io/" target="_blank" rel="noopener">itch.io <span>play the games &nearr;</span></a>
+    <a href="https://krishships.github.io/krishdev-folderai/agent" target="_blank" rel="noopener">Folder AI Agent <span>open the app &nearr;</span></a>
+  </div>
+
+  <div class="search" id="search" hidden>
+    <input id="searchInput" type="search" placeholder="Search this site &mdash; games, AI tools, contact" aria-label="Search this site" autocomplete="off">
+    <div id="searchResults"></div>
+    <p class="searchhint">Enter opens the first result &middot; Esc closes</p>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ================= HOME ================= -->
+  <div class="panel on" id="panel-home" role="tabpanel">
+    <header class="hero">
+      <div class="hero-grid">
+        <div>
+          <div class="eyebrow">Godot games &middot; AI tools &middot; open for small projects</div>
+          <h1>I build games and <em>AI</em> tools.</h1>
+          <p class="lede">
+            I'm Got_this. I make 2D and 3D games in Godot, and websites where AI does real work &mdash;
+            chatting, reading a file you hand it, and answering from sources instead of guessing.
+            Small, well-scoped jobs are my favourite kind: you get something working, not a plan.
+          </p>
+          <div class="links">
+            <a class="btn btn--primary" href="#games" data-tab="games">See the games</a>
+            <a class="btn" href="#ai" data-tab="ai">Try the AI tools</a>
+          </div>
+        </div>
+        <div class="live-card">
+          <h4>Live right now</h4>
+          <a href="https://krishships.github.io/krishdev-folderai/agent" target="_blank" rel="noopener">
+            <span class="dot"></span>Folder AI Agent <small>coding assistant</small></a>
+          <a href="https://krishships.github.io/krishdev-folderai/" target="_blank" rel="noopener">
+            <span class="dot"></span>Wikipedia answers <small>no AI API</small></a>
+          <a href="https://got-this.itch.io/" target="_blank" rel="noopener">
+            <span class="dot"></span>Four games <small>itch.io</small></a>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <div class="section-head"><span class="num">01</span><h2>What's here</h2></div>
+      <div class="grid">
+        <a class="tile" href="#games" data-tab="games">
+          <div class="cover cv1"><span class="init">Games</span><span class="badge">4 live</span></div>
+          <div class="body">
+            <h3>Games</h3>
+            <p>Four published Godot builds &mdash; browser and Android. Movement, enemy AI, UI, export.</p>
+            <span class="go">Open the games &rarr;</span>
+          </div>
+        </a>
+        <a class="tile" href="#ai" data-tab="ai">
+          <div class="cover cv2"><span class="init">AI tools</span><span class="badge">2 live</span></div>
+          <div class="body">
+            <h3>AI tools</h3>
+            <p>A coding agent that fixes the script you upload, and a Wikipedia answer engine with no AI API at all.</p>
+            <span class="go">Open the tools &rarr;</span>
+          </div>
+        </a>
+        <a class="tile" href="#contact" data-tab="contact">
+          <div class="cover cv3"><span class="init">Hire me</span><span class="badge">Available</span></div>
+          <div class="body">
+            <h3>Hire me</h3>
+            <p>Small scoped jobs, fixed price agreed first, and you see it working before final payment.</p>
+            <span class="go">Get in touch &rarr;</span>
+          </div>
+        </a>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= GAMES ================= -->
+  <div class="panel" id="panel-games" role="tabpanel">
+    <header class="hero">
+      <div class="eyebrow">Godot 4 &middot; 2D and 3D &middot; browser, Android, download</div>
+      <h1>Games.</h1>
+      <p class="lede">Four published builds on itch.io. Each one was made end to end: movement, enemy and NPC behaviour, UI, and getting it exported and playable.</p>
+      <div class="links">
+        <a class="btn btn--primary" href="https://got-this.itch.io/" target="_blank" rel="noopener">Open itch.io</a>
+        <a class="btn" href="#contact" data-tab="contact">Hire me</a>
+      </div>
+    </header>
+
+    <section>
+      <div class="section-head"><span class="num">01</span><h2>Published</h2><span class="section-note">Free on itch.io</span></div>
+      <div class="grid">
+        <a class="tile" href="https://got-this.itch.io/" target="_blank" rel="noopener">
+          <div class="cover cv1"><span class="init">Under the Looks</span><span class="badge">Browser + Android</span></div>
+          <div class="body">
+            <h3>Under the Looks</h3>
+            <p>Playable in browser and on Android. Built and shipped end to end.</p>
+            <span class="go">Play &rarr;</span>
+          </div>
+        </a>
+        <a class="tile" href="https://got-this.itch.io/" target="_blank" rel="noopener">
+          <div class="cover cv2"><span class="init">not a souls like</span><span class="badge">Browser</span></div>
+          <div class="body">
+            <h3>not a souls like</h3>
+            <p>Combat-focused prototype. Enemy behaviour, hit detection, feel.</p>
+            <span class="go">Play &rarr;</span>
+          </div>
+        </a>
+        <a class="tile" href="https://got-this.itch.io/" target="_blank" rel="noopener">
+          <div class="cover cv3"><span class="init">Adventure alone</span><span class="badge">Browser</span></div>
+          <div class="body">
+            <h3>Adventure alone</h3>
+            <p>Exploration build. World layout, movement, pacing.</p>
+            <span class="go">Play &rarr;</span>
+          </div>
+        </a>
+        <a class="tile" href="https://got-this.itch.io/" target="_blank" rel="noopener">
+          <div class="cover cv4"><span class="init">trails Forgotten</span><span class="badge">Download</span></div>
+          <div class="body">
+            <h3>trails Forgotten</h3>
+            <p>A short exploration prototype. Download only, not a browser build.</p>
+            <span class="go">Get it &rarr;</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="num">02</span><h2>What I can build for you</h2></div>
+      <div class="grid">
+        <div class="svc"><span class="kicker">Prototypes</span><h3>Playable builds, fast</h3>
+          <p>A working prototype you can actually play, so you can feel whether the idea is fun before spending on art.</p></div>
+        <div class="svc"><span class="kicker">Systems</span><h3>Gameplay and AI behaviour</h3>
+          <p>Player movement, enemy and NPC decision-making, state machines, saving, and UI that works on a phone.</p></div>
+        <div class="svc"><span class="kicker">Ship</span><h3>Export and fixes</h3>
+          <p>Getting a Godot project exported for web or Android, and fixing the errors that stop it from running.</p></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= AI TOOLS ================= -->
+  <div class="panel" id="panel-ai" role="tabpanel">
+    <header class="hero">
+      <div class="eyebrow">Two live tools &middot; one uses APIs, one uses none</div>
+      <h1>AI <em>tools</em>.</h1>
+      <p class="lede">Both are running right now and both are free to try. One is a coding agent that works on files you give it; the other answers questions from Wikipedia without any AI API at all.</p>
+    </header>
+
+    <section>
+      <div class="section-head"><span class="num">01</span><h2>Live now</h2><span class="section-note">No signup, no key</span></div>
+      <div class="grid">
+        <div class="proj">
+          <div class="cover cv2"><span class="init">Folder AI Agent</span><span class="badge">Live</span></div>
+          <div class="inner">
+            <div class="sub">Coding assistant</div>
+            <h3>Folder AI Agent</h3>
+            <p>A chat assistant that writes complete Godot and web code, explains your errors, and works on files you give it.</p>
+            <ul class="feat">
+              <li>Runs on the Pollinations API and other model providers</li>
+              <li>Upload a script, get a fixed version back as a download</li>
+              <li>Explains Godot 4 errors in plain language</li>
+              <li>No signup, no key</li>
+            </ul>
+            <a class="btn btn--primary" href="https://krishships.github.io/krishdev-folderai/agent" target="_blank" rel="noopener">Open the agent &rarr;</a>
+          </div>
+        </div>
+        <div class="proj">
+          <div class="cover cv3"><span class="init">Wikipedia answers</span><span class="badge">No AI API</span></div>
+          <div class="inner">
+            <div class="sub">No AI API</div>
+            <h3>Wikipedia answers</h3>
+            <p>Ask a question, it finds the topic on Wikipedia and writes the answer from the article itself.</p>
+            <ul class="feat">
+              <li>No AI API, no model, no key &mdash; nothing to pay for</li>
+              <li>Answers come from the source article, not from memory</li>
+              <li>Runs in the browser, works on a phone</li>
+              <li>Good for facts, definitions and quick lookups</li>
+            </ul>
+            <a class="btn" href="https://krishships.github.io/krishdev-folderai/" target="_blank" rel="noopener">Try it &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="num">02</span><h2>What I can build for you</h2></div>
+      <div class="grid">
+        <div class="svc"><span class="kicker">Web + AI</span><h3>Sites wired to AI models</h3>
+          <p>Front ends connected to one or several AI APIs &mdash; chat tools, content helpers, multi-agent setups where models hand work to each other.</p></div>
+        <div class="svc"><span class="kicker">No-API</span><h3>Tools that need no model</h3>
+          <p>Search-and-answer pages built on open sources, so there is no API bill and nothing that can go down.</p></div>
+        <div class="svc"><span class="kicker">Fast builds</span><h3>Small jobs, shipped quickly</h3>
+          <p>Landing pages, fixes on a site that was built with AI tools and stopped behaving, and finishing work someone else started.</p></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= CONTACT ================= -->
+  <div class="panel" id="panel-contact" role="tabpanel">
+    <header class="hero">
+      <div class="eyebrow">Usually replies the same day</div>
+      <h1>Get in <em>touch</em>.</h1>
+      <p class="lede">Tell me what you're building and roughly what it should cost. Discord is fastest &mdash; email works too.</p>
+    </header>
+    <section style="border-top:0;padding-top:0">
+      <div class="contact-grid">
+        <div>
+          <div class="links" style="margin-bottom:14px">
+            <a class="btn btn--primary" href="https://discord.com/users/krishgamerzop" target="_blank" rel="noopener">Discord: krishgamerzop</a>
+            <a class="btn" href="https://got-this.itch.io/" target="_blank" rel="noopener">itch.io</a>
+          </div>
+          <div class="links" style="margin-bottom:14px">
+            <a class="btn" id="mailLink" href="#" data-u="malwarenever" data-d="gmail.com"
+               aria-label="Email me">Email me</a>
+          </div>
+          <p style="color:var(--text-dim);font-size:14.5px;margin:0">
+            I'd rather tell you a job isn't a fit than take it and disappear. If it's outside what
+            I've built before, I'll say so in the first message.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <span>&copy; 2026 Got_this</span>
+    <a href="#home" data-tab="home">Home</a>
+    <a href="#games" data-tab="games">Games</a>
+    <a href="#ai" data-tab="ai">AI tools</a>
+    <a href="https://got-this.itch.io/" target="_blank" rel="noopener">itch.io</a>
+    <span class="sp"></span>
+    <span style="font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase">Built by me</span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var tabs = Array.prototype.slice.call(document.querySelectorAll("[data-tab]"));
+  var panels = { home:"panel-home", games:"panel-games", ai:"panel-ai", contact:"panel-contact" };
+
+  function show(name, push){
+    if(!panels[name]) name = "home";
+    Object.keys(panels).forEach(function(k){
+      var p = document.getElementById(panels[k]);
+      if(p) p.classList.toggle("on", k === name);
+    });
+    document.querySelectorAll('.tab').forEach(function(b){
+      b.setAttribute("aria-selected", b.getAttribute("data-tab") === name ? "true" : "false");
+    });
+    if(push && location.hash !== "#" + name) history.replaceState(null, "", "#" + name);
+    window.scrollTo({top:0, behavior:"instant"});
+  }
+
+  tabs.forEach(function(el){
+    el.addEventListener("click", function(e){
+      var name = el.getAttribute("data-tab");
+      if(!name) return;
+      e.preventDefault();
+      show(name, true);
+    });
+  });
+
+  // email link, assembled at runtime so it isn't sitting in the HTML as plain text
+  var ml = document.getElementById("mailLink");
+  if (ml) { ml.href = "mailto:" + ml.dataset.u + "@" + ml.dataset.d; }
+
+  // ---------- site search ----------
+  var ITEMS = [
+    {t:"Home", d:"who I am, what I build", c:"Pages", tab:"home"},
+    {t:"Games", d:"four published Godot builds", c:"Pages", tab:"games"},
+    {t:"AI tools", d:"agent + Wikipedia answers", c:"Pages", tab:"ai"},
+    {t:"Contact", d:"Discord and email", c:"Pages", tab:"contact"},
+    {t:"Hire me", d:"small scoped jobs, fixed price", c:"Pages", tab:"contact"},
+    {t:"Under the Looks", d:"browser + Android game", c:"Games", tab:"games", ext:"https://got-this.itch.io/"},
+    {t:"not a souls like", d:"combat prototype", c:"Games", tab:"games", ext:"https://got-this.itch.io/"},
+    {t:"Adventure alone", d:"exploration build", c:"Games", tab:"games", ext:"https://got-this.itch.io/"},
+    {t:"trails Forgotten", d:"download only prototype", c:"Games", tab:"games", ext:"https://got-this.itch.io/"},
+    {t:"Godot", d:"prototypes, gameplay systems, export", c:"Games", tab:"games"},
+    {t:"Folder AI Agent", d:"coding assistant, Pollinations API", c:"AI tools", tab:"ai", ext:"https://krishships.github.io/krishdev-folderai/agent"},
+    {t:"Wikipedia answers", d:"no AI API, answers from the article", c:"AI tools", tab:"ai", ext:"https://krishships.github.io/krishdev-folderai/"},
+    {t:"itch.io", d:"all published games", c:"Links", ext:"https://got-this.itch.io/"},
+    {t:"Discord", d:"fastest way to reach me", c:"Links", ext:"https://discord.com/users/krishgamerzop"},
+    {t:"Email", d:"mail me directly", c:"Links", ext:"mailto:malwarenever@gmail.com"}
+  ];
+  var searchBox = document.getElementById("search"),
+      searchInput = document.getElementById("searchInput"),
+      searchResults = document.getElementById("searchResults"),
+      sel = 0, shown = [];
+
+  function renderSearch(q){
+    q = (q || "").trim().toLowerCase();
+    shown = ITEMS.filter(function(it){ return !q || (it.t + " " + it.d).toLowerCase().indexOf(q) > -1; }).slice(0, 8);
+    sel = 0;
+    if(!shown.length){ searchResults.innerHTML = '<div class="none">Nothing matches. Try "games", "agent" or "contact".</div>'; return; }
+    var order = ["Pages", "Games", "AI tools", "Links"], html = "", last = null, i = 0;
+    order.forEach(function(cat){
+      var group = shown.filter(function(it){ return it.c === cat; });
+      if(!group.length) return;
+      html += '<div class="grp">' + cat + '</div>';
+      group.forEach(function(it){
+        var idx = shown.indexOf(it);
+        html += '<a href="#" data-i="' + idx + '"' + (idx === 0 ? ' class="sel"' : '') + '>' +
+                '<span class="t">' + it.t + '</span><small>' + it.d + '</small></a>';
+        i++;
+      });
+    });
+    searchResults.innerHTML = html;
+  }
+  function goTo(it){
+    closeSearch();
+    if(it.tab) show(it.tab, true);
+    if(it.ext) window.open(it.ext, "_blank", "noopener");
+  }
+  var barSearch = document.getElementById("barSearch"),
+      barInput = document.getElementById("barSearchInput"),
+      barClose = document.getElementById("barSearchClose"),
+      tabsEl = document.querySelector(".tabs");
+
+  function openSearch(){
+    toggleMenu(false);
+    searchBox.hidden = false;
+    searchBox.classList.add("noinput");
+    barSearch.hidden = false;
+    document.body.classList.add("searching");
+    tabsEl.classList.add("hide");
+    barInput.value = "";
+    renderSearch("");
+    barInput.focus();
+  }
+  function closeSearch(){
+    searchBox.hidden = true;
+    barSearch.hidden = true;
+    document.body.classList.remove("searching");
+    tabsEl.classList.remove("hide");
+  }
+  barInput.addEventListener("input", function(){ renderSearch(barInput.value); });
+  barInput.addEventListener("keydown", function(e){
+    if(e.key === "ArrowDown" || e.key === "ArrowUp"){
+      e.preventDefault(); if(!shown.length) return;
+      sel = (sel + (e.key === "ArrowDown" ? 1 : -1) + shown.length) % shown.length;
+      Array.prototype.forEach.call(searchResults.querySelectorAll("a"), function(a, i){ a.classList.toggle("sel", i === sel); });
+    } else if(e.key === "Enter"){ e.preventDefault(); if(shown[sel]) goTo(shown[sel]); }
+    else if(e.key === "Escape"){ closeSearch(); }
+  });
+  barClose.addEventListener("click", function(e){ e.stopPropagation(); closeSearch(); });
+
+  searchResults.addEventListener("click", function(e){
+    var a = e.target.closest("a[data-i]"); if(!a) return;
+    e.preventDefault(); goTo(shown[+a.dataset.i]);
+  });
+  searchInput.addEventListener("input", function(){ renderSearch(searchInput.value); });
+  searchInput.addEventListener("keydown", function(e){
+    if(e.key === "ArrowDown" || e.key === "ArrowUp"){
+      e.preventDefault(); if(!shown.length) return;
+      sel = (sel + (e.key === "ArrowDown" ? 1 : -1) + shown.length) % shown.length;
+      Array.prototype.forEach.call(searchResults.querySelectorAll("a"), function(a, i){ a.classList.toggle("sel", i === sel); });
+    } else if(e.key === "Enter"){ e.preventDefault(); if(shown[sel]) goTo(shown[sel]); }
+    else if(e.key === "Escape"){ closeSearch(); }
+  });
+  document.addEventListener("click", function(e){ if(!searchBox.hidden && !searchBox.contains(e.target)) closeSearch(); });
+  document.addEventListener("keydown", function(e){ if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k"){ e.preventDefault(); openSearch(); } });
+
+  // menu / search dropdown
+  var menu = document.getElementById("menu");
+  var menuBtn = document.getElementById("menuBtn"), gridBtn = document.getElementById("gridBtn"), searchBtn = document.getElementById("searchBtn");
+  function toggleMenu(force){
+    var open = force !== undefined ? force : menu.hidden;
+    menu.hidden = !open;
+    menuBtn.setAttribute("aria-expanded", String(open));
+    gridBtn.setAttribute("aria-expanded", String(open));
+  }
+  [menuBtn, gridBtn].forEach(function(b){ if(b) b.addEventListener("click", function(e){ e.stopPropagation(); toggleMenu(); }); });
+  if(searchBtn) searchBtn.addEventListener("click", function(e){ e.stopPropagation(); openSearch(); });
+  var menuSearch = document.getElementById("menuSearch");
+  if(menuSearch) menuSearch.addEventListener("click", function(e){ e.preventDefault(); e.stopPropagation(); openSearch(); });
+  document.addEventListener("click", function(e){ if(!menu.contains(e.target)) toggleMenu(false); });
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape") toggleMenu(false); });
+  menu.querySelectorAll("a").forEach(function(a){ a.addEventListener("click", function(){ toggleMenu(false); }); });
+
+  window.addEventListener("hashchange", function(){ show(location.hash.replace("#",""), false); });
+  show(location.hash.replace("#","") || "home", false);
+})();
+</script>
+</body>
+</html>
